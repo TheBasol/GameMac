@@ -1,0 +1,27 @@
+{
+  "layoutKey": "3537_1012",
+  "deviceName": "GameSir Kaleid K1",
+  "axisMap": {
+    "48": "leftStickX",
+    "49": "leftStickY",
+    "50": "rightStickX",
+    "53": "rightStickY",
+    "51": "leftTrigger",
+    "52": "rightTrigger",
+    "131269": "leftTrigger",
+    "131268": "rightTrigger"
+  },
+  "buttonMap": {
+    "1": "buttonA",
+    "2": "buttonB",
+    "3": "buttonX",
+    "4": "buttonY",
+    "5": "leftBumper",
+    "6": "rightBumper",
+    "7": "select",
+    "8": "start",
+    "9": "leftTriggerButton",
+    "10": "rightTriggerButton",
+    "11": "home"
+  }
+}

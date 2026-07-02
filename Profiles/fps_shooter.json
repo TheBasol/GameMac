@@ -1,0 +1,19 @@
+{
+ "profileName": "FPS Shooter",
+ "buttonMapping": {
+ "leftStickUp": 13,
+ "leftStickDown": 1,
+ "leftStickLeft": 0,
+ "leftStickRight": 2,
+ "buttonA": 49,
+ "buttonB": 56,
+ "buttonX": 15,
+ "rightTriggerButton": 1000,
+ "leftTriggerButton": 1001,
+ "start": 53,
+ "select": 48
+ },
+ "deadZone": 0.15,
+ "mouseSensitivity": 1.5,
+ "mouseExponent": 1.2
+}

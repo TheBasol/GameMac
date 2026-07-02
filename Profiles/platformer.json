@@ -1,0 +1,22 @@
+{
+ "profileName": "Platformer",
+ "buttonMapping": {
+ "leftStickUp": 126,
+ "leftStickDown": 125,
+ "leftStickLeft": 123,
+ "leftStickRight": 124,
+ "dpadUp": 126,
+ "dpadDown": 125,
+ "dpadLeft": 123,
+ "dpadRight": 124,
+ "buttonA": 6,
+ "buttonB": 7,
+ "buttonX": 0,
+ "buttonY": 1,
+ "select": 53,
+ "start": 36
+ },
+ "deadZone": 0.1,
+ "mouseSensitivity": 1.0,
+ "mouseExponent": 1.0
+}

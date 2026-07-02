@@ -1,0 +1,33 @@
+# Xcode
+#
+build/
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+!default.pbxuser
+!default.mode1v3
+!default.mode2v3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcworkspace
+!default.xcworkspace
+*.xcuserstate
+*.xsyncdest
+*.xcscmblueprint
+
+# macOS
+#
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+
+# Files that might be created at runtime
+#
+*.log
+*.json.tmp
