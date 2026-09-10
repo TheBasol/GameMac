@@ -27,6 +27,7 @@ public final class RawUSBGamepadManager {
     private var thread: Thread?
     private var threadRunLoop: CFRunLoop?
     private var activeDeviceService: io_service_t = 0
+    private var activeDeviceInfo: DeviceInfo?
     
     // Apple USB Class IDs (Hardcoded UUIDs because macros are not visible in Swift)
     private let kIOUSBDeviceUserClientTypeID = CFUUIDGetConstantUUIDWithBytes(kCFAllocatorDefault, 0x9d, 0xc7, 0xb7, 0x80, 0x9e, 0xc0, 0x11, 0xD4, 0xa5, 0x4f, 0x00, 0x0a, 0x27, 0x05, 0x28, 0x61)
@@ -101,14 +102,12 @@ public final class RawUSBGamepadManager {
         }
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .defaultMode)
         
-        // 2. Build Matching Dictionaries for GameSir K1 (VID: 0x3537, PID: 0x1058)
+        // 2. Build Matching Dictionaries for GameSir controllers (VID: 0x3537)
         let matchedDict = IOServiceMatching("IOUSBHostDevice") as NSMutableDictionary
         matchedDict[kUSBVendorID] = 0x3537
-        matchedDict[kUSBProductID] = 0x1058
         
         let removedDict = IOServiceMatching("IOUSBHostDevice") as NSMutableDictionary
         removedDict[kUSBVendorID] = 0x3537
-        removedDict[kUSBProductID] = 0x1058
         
         // Setup matching callbacks passing self as context pointer
         let contextPointer = Unmanaged.passUnretained(self).toOpaque()
@@ -167,23 +166,45 @@ public final class RawUSBGamepadManager {
             
             self.activeDeviceService = service
             
-            // Build device info
-            let name = "GameSir-K1 Controller for Xbox"
-            let info = DeviceInfo(name: name, vendorID: 0x3537, productID: 0x1058)
+            // Build device info dynamically from registry properties
+            var vid: Int = 0x3537
+            var pid: Int = 0x1012
+            var name = "GameSir-K1 Controller for Xbox"
             
-            print("[RAW-USB] Matched GameSir-K1! Calling configureUSBDevice...")
+            if let vidRef = IORegistryEntryCreateCFProperty(service, "idVendor" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? NSNumber {
+                vid = vidRef.intValue
+            }
+            if let pidRef = IORegistryEntryCreateCFProperty(service, "idProduct" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? NSNumber {
+                pid = pidRef.intValue
+            }
+            if let nameRef = (IORegistryEntryCreateCFProperty(service, "USB Product Name" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? String)
+                ?? (IORegistryEntryCreateCFProperty(service, "kUSBProductString" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? String) {
+                let trimmed = nameRef.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty {
+                    name = trimmed
+                }
+            }
+            
+            let info = DeviceInfo(name: name, vendorID: vid, productID: pid)
+            self.activeDeviceInfo = info
+            
+            print("[RAW-USB] Matched \(name) (VID: 0x\(String(format: "%04X", vid)), PID: 0x\(String(format: "%04X", pid)))! Calling configureUSBDevice...")
+            AppLogger.hid.info("Matched Raw USB controller: \(name) [VID: \(vid), PID: \(pid)]")
             
             // Open device and configure interface on our background loop
             if configureUSBDevice(service: service) {
                 print("[RAW-USB] configureUSBDevice SUCCEEDED - controller is live!")
+                AppLogger.hid.info("configureUSBDevice SUCCEEDED for \(name)")
                 DispatchQueue.main.async { [weak self] in
                     self?.onDeviceMatched?(info)
                     self?.state.update { $0.isConnected = true }
                 }
             } else {
                 print("[RAW-USB] configureUSBDevice FAILED")
+                AppLogger.hid.error("configureUSBDevice FAILED for \(name)")
                 cleanupUSBResources()
                 self.activeDeviceService = 0
+                self.activeDeviceInfo = nil
             }
         }
     }
@@ -191,9 +212,10 @@ public final class RawUSBGamepadManager {
     private func handleDevicesRemoved(iterator: io_iterator_t) {
         while case let service = IOIteratorNext(iterator), service != 0 {
             if service == activeDeviceService || activeDeviceService != 0 {
-                AppLogger.hid.info("Raw GameSir-K1 Controller disconnected.")
+                AppLogger.hid.info("Raw GameSir Controller disconnected.")
                 
-                let info = DeviceInfo(name: "GameSir-K1 Controller for Xbox", vendorID: 0x3537, productID: 0x1058)
+                let info = self.activeDeviceInfo ?? DeviceInfo(name: "GameSir Controller", vendorID: 0x3537, productID: 0x1012)
+                self.activeDeviceInfo = nil
                 
                 // Fix #6: Execute callbacks and flush keys BEFORE resetting resources
                 DispatchQueue.main.async { [weak self] in
@@ -236,13 +258,8 @@ public final class RawUSBGamepadManager {
         let dev = devPtr.assumingMemoryBound(to: UnsafeMutablePointer<IOUSBDeviceInterface>?.self)
         self.deviceInterface = dev
         
-        // 3. Open Device in Seize Mode (dereferencing double pointer safely)
-        kr = dev.pointee?.pointee.USBDeviceOpenSeize(dev) ?? kIOReturnError
-        if kr != kIOReturnSuccess {
-            // Try standard open if seize fails
-            print("[RAW-USB] USBDeviceOpenSeize failed (\(ioReturnDescription(kr))). Trying standard open...")
-            kr = dev.pointee?.pointee.USBDeviceOpen(dev) ?? kIOReturnError
-        }
+        // 3. Open Device safely without seizing to avoid kicking off macOS IOHIDFamily
+        kr = dev.pointee?.pointee.USBDeviceOpen(dev) ?? kIOReturnError
         guard kr == kIOReturnSuccess else {
             print("[RAW-USB] FAILED Step 3: USBDeviceOpen failed with \(ioReturnDescription(kr))")
             return false

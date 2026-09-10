@@ -183,6 +183,13 @@ public final class HIDGamepadManager {
         
         hidThread.waitTillReady()
         AppLogger.hid.info("HID thread started.")
+        
+        // 6. Enumerate already connected devices
+        if let existingDevices = IOHIDManagerCopyDevices(managerRef) as? Set<IOHIDDevice> {
+            for device in existingDevices {
+                deviceMatched(device: device)
+            }
+        }
     }
     
     public func stop() {
