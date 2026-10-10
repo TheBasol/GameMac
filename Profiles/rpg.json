@@ -1,0 +1,26 @@
+{
+  "profileName": "RPG",
+  "buttonMapping": {
+    "leftStickUp": 13,
+    "leftStickDown": 1,
+    "leftStickLeft": 0,
+    "leftStickRight": 2,
+    "dpadUp": 18,
+    "dpadDown": 20,
+    "dpadLeft": 21,
+    "dpadRight": 19,
+    "buttonA": 49,
+    "buttonB": 56,
+    "buttonX": 14,
+    "buttonY": 34,
+    "leftBumper": 12,
+    "rightBumper": 15,
+    "rightTriggerButton": 1000,
+    "leftTriggerButton": 1001,
+    "start": 53,
+    "select": 46
+  },
+  "deadZone": 0.15,
+  "mouseSensitivity": 1.2,
+  "mouseExponent": 1.1
+}

@@ -130,5 +130,8 @@ struct ProfileSelectorView: View {
  .frame(width: 260, height: 130)
  .background(Color(white: 0.1))
  }
+ .onAppear {
+     viewModel.reloadProfiles()
+ }
  }
 }

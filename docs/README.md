@@ -6,6 +6,7 @@ Index of the project documentation.
 |----------|-------------|
 | [application.md](application.md) | Detailed application description: architecture, components, data flows, UI, profiles, and permissions |
 | [hid-binding-fix.md](hid-binding-fix.md) | HID button binding and visualizer fix for the GameSir-K1 (June 2025) |
+| [device-detection-and-cemu-sdl-fix.md](device-detection-and-cemu-sdl-fix.md) | Controller auto-detection fix in RawUSBGamepadManager and SDL2 (SDLController) compatibility (September 2026) |
 | [layouts-and-profiles.md](layouts-and-profiles.md) | Difference between hardware layouts and mapping profiles; JSON formats and file locations |
 
 ## Quick Summary

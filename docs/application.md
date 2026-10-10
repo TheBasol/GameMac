@@ -249,9 +249,10 @@ File: [EventInjector.swift](file:///Users/enriquevazquez/Documents/Developer/Gam
 
 ### Defaults
 
-`DefaultProfiles.swift` ([DefaultProfiles.swift](file:///Users/enriquevazquez/Documents/Developer/GameMac/GameMac/Profiles/DefaultProfiles.swift)) initializes two pre-made profiles:
+`DefaultProfiles.swift` ([DefaultProfiles.swift](file:///Users/enriquevazquez/Documents/Developer/GameMac/GameMac/Profiles/DefaultProfiles.swift)) initializes pre-made profiles:
 - **FPS Shooter:** WASD on left stick, mouse aiming on right stick, shooting triggers mapped to mouse clicks.
 - **Platformer:** Directional arrows mapped to sticks/D-pad, action buttons to Z and X.
+- **RPG:** WASD on left stick, hotbar (1-4) on D-pad, actions (Space, Shift, E, I) on face buttons, skills on bumpers, attack/block on triggers.
 
 ---
 

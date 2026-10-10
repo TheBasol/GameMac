@@ -48,11 +48,10 @@ public final class GameMacViewModel: ObservableObject {
         if let first = existingProfiles.first {
             self.activeProfile = first
         } else {
-            let fps = DefaultProfiles.fpsShooter
-            let plat = DefaultProfiles.platformer
-            try? ProfileManager.shared.saveProfile(fps)
-            try? ProfileManager.shared.saveProfile(plat)
-            self.activeProfile = fps
+            for profile in DefaultProfiles.all {
+                try? ProfileManager.shared.saveProfile(profile)
+            }
+            self.activeProfile = DefaultProfiles.fpsShooter
         }
         
         self.profiles = ProfileManager.shared.listProfiles()
@@ -229,5 +228,12 @@ public final class GameMacViewModel: ObservableObject {
         
         try? ProfileManager.shared.saveProfile(updated)
         profiles = ProfileManager.shared.listProfiles()
+    }
+    
+    public func reloadProfiles() {
+        profiles = ProfileManager.shared.listProfiles()
+        if !profiles.contains(where: { $0.profileName == activeProfile.profileName }), let first = profiles.first {
+            selectProfile(first)
+        }
     }
 }

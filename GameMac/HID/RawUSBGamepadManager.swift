@@ -104,10 +104,14 @@ public final class RawUSBGamepadManager {
         
         // 2. Build Matching Dictionaries for GameSir controllers (VID: 0x3537)
         let matchedDict = IOServiceMatching("IOUSBHostDevice") as NSMutableDictionary
-        matchedDict[kUSBVendorID] = 0x3537
+        let matchedProp = NSMutableDictionary()
+        matchedProp["idVendor"] = 0x3537
+        matchedDict["IOPropertyMatch"] = matchedProp
         
         let removedDict = IOServiceMatching("IOUSBHostDevice") as NSMutableDictionary
-        removedDict[kUSBVendorID] = 0x3537
+        let removedProp = NSMutableDictionary()
+        removedProp["idVendor"] = 0x3537
+        removedDict["IOPropertyMatch"] = removedProp
         
         // Setup matching callbacks passing self as context pointer
         let contextPointer = Unmanaged.passUnretained(self).toOpaque()
