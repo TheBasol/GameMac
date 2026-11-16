@@ -177,27 +177,113 @@ extension KeyCodes {
         case 0x2F: return "."
         case 0x32: return "`"
         
-        case 0x24: return "Enter ↩"
+        case 0x24: return "Return ↩"
         case 0x30: return "Tab ⇥"
         case 0x31: return "Space ␣"
-        case 0x33: return "Delete "
-        case 0x35: return "Escape "
-        case 0x37: return "Cmd "
+        case 0x33: return "Delete ⌫"
+        case 0x35: return "Escape ⎋"
+        case 0x36: return "Right Command ⌘"
+        case 0x37: return "Command ⌘"
         case 0x38: return "Shift ⇧"
-        case 0x39: return "Caps ⇪"
-        case 0x3A: return "Option "
-        case 0x3B: return "Ctrl "
-        
-        case 0x7B: return "Left ◀"
-        case 0x7C: return "Right ▶"
-        case 0x7D: return "Down ▼"
-        case 0x7E: return "Up ▲"
-        
+        case 0x39: return "Caps Lock ⇪"
+        case 0x3A: return "Option ⌥"
+        case 0x3B: return "Control ⌃"
+        case 0x3C: return "Right Shift ⇧"
+        case 0x3D: return "Right Option ⌥"
+        case 0x3E: return "Right Control ⌃"
+        case 0x3F: return "Fn"
+
+        // Numeric Keypad
+        case 0x41: return "Keypad ."
+        case 0x43: return "Keypad *"
+        case 0x45: return "Keypad +"
+        case 0x47: return "Keypad Clear"
+        case 0x4B: return "Keypad /"
+        case 0x4C: return "Keypad Enter"
+        case 0x4E: return "Keypad -"
+        case 0x51: return "Keypad ="
+        case 0x52: return "Keypad 0"
+        case 0x53: return "Keypad 1"
+        case 0x54: return "Keypad 2"
+        case 0x55: return "Keypad 3"
+        case 0x56: return "Keypad 4"
+        case 0x57: return "Keypad 5"
+        case 0x58: return "Keypad 6"
+        case 0x59: return "Keypad 7"
+        case 0x5B: return "Keypad 8"
+        case 0x5C: return "Keypad 9"
+
+        // Function Keys
+        case 0x7A: return "F1"
+        case 0x78: return "F2"
+        case 0x63: return "F3"
+        case 0x76: return "F4"
+        case 0x60: return "F5"
+        case 0x61: return "F6"
+        case 0x62: return "F7"
+        case 0x64: return "F8"
+        case 0x65: return "F9"
+        case 0x6D: return "F10"
+        case 0x67: return "F11"
+        case 0x6F: return "F12"
+        case 0x69: return "F13"
+        case 0x6B: return "F14"
+        case 0x71: return "F15"
+        case 0x6A: return "F16"
+
+        // Navigation
+        case 0x72: return "Help"
+        case 0x73: return "Home"
+        case 0x74: return "Page Up"
+        case 0x75: return "Forward Delete ⌦"
+        case 0x77: return "End"
+        case 0x79: return "Page Down"
+
+        // Cursor Arrows
+        case 0x7B: return "Left ←"
+        case 0x7C: return "Right →"
+        case 0x7D: return "Down ↓"
+        case 0x7E: return "Up ↑"
+
+        // Mouse Clicks
         case 1000: return "Left Click"
         case 1001: return "Right Click"
         case 1002: return "Middle Click"
-        
+
         default: return "Key 0x\(String(format: "%02X", keyCode))"
+        }
+    }
+
+    /// Compact keycap label suitable for rendering inside controller diagram badges.
+    public static func shortLabel(for keyCode: UInt16) -> String {
+        switch keyCode {
+        case 0x24: return "↩"
+        case 0x30: return "⇥"
+        case 0x31: return "␣"
+        case 0x33: return "⌫"
+        case 0x35: return "⎋"
+        case 0x36, 0x37: return "⌘"
+        case 0x38, 0x3C: return "⇧"
+        case 0x39: return "⇪"
+        case 0x3A, 0x3D: return "⌥"
+        case 0x3B, 0x3E: return "⌃"
+        case 0x3F: return "fn"
+        case 0x4C: return "⌤"
+        case 0x52...0x5C:
+            return name(for: keyCode).replacingOccurrences(of: "Keypad ", with: "#")
+        case 0x73: return "↖"
+        case 0x74: return "⇞"
+        case 0x75: return "⌦"
+        case 0x77: return "↘"
+        case 0x79: return "⇟"
+        case 0x7B: return "←"
+        case 0x7C: return "→"
+        case 0x7D: return "↓"
+        case 0x7E: return "↑"
+        case 1000: return "LMB"
+        case 1001: return "RMB"
+        case 1002: return "MMB"
+        default: return name(for: keyCode)
         }
     }
 }

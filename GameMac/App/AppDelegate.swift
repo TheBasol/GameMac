@@ -26,6 +26,11 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
  
+    public func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        // Keep running in the macOS Menu Bar when the main window is closed.
+        return false
+    }
+
  public func applicationWillTerminate(_ notification: Notification) {
  AppLogger.default.info("GameMac application will terminate. Flushing input states...")
  if #available(macOS 13.0, *) {

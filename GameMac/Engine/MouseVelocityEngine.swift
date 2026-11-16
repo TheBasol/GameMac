@@ -142,29 +142,22 @@ public final class MouseVelocityEngine {
  }
  }
  
- /// Safely changes the mouse mode and manages cursor association.
- private func setMode(_ newMode: MouseMode) {
- queue.async { [weak self] in
- guard let self = self, self._mode != newMode else { return }
- 
- if newMode == .fps {
- // Disassociate cursor for games (delivers raw relative movement)
- CGAssociateMouseAndMouseCursorPosition(0)
- AppLogger.engine.info("MouseVelocityEngine changed to FPS mode (cursor disassociated)")
- } else {
- // Warp cursor to the center of the screen before re-associating
- let frame = self.mainScreenFrame
- let center = CGPoint(
- x: frame.origin.x + frame.width / 2.0,
- y: self.primaryScreenHeight - (frame.origin.y + frame.height / 2.0)
- )
- CGWarpMouseCursorPosition(center)
- CGAssociateMouseAndMouseCursorPosition(1)
- AppLogger.engine.info("MouseVelocityEngine changed to Desktop mode (cursor warped to center & re-associated)")
- }
- self._mode = newMode
- }
- }
+    /// Safely changes the mouse mode without locking the user's physical mouse cursor.
+    private func setMode(_ newMode: MouseMode) {
+        queue.async { [weak self] in
+            guard let self = self, self._mode != newMode else { return }
+
+            // Ensure the physical mouse remains associated so macOS cursor movement is never frozen.
+            CGAssociateMouseAndMouseCursorPosition(1)
+
+            if newMode == .fps {
+                AppLogger.engine.info("MouseVelocityEngine changed to FPS mode (relative delta injection)")
+            } else {
+                AppLogger.engine.info("MouseVelocityEngine changed to Desktop mode (absolute cursor clamping)")
+            }
+            self._mode = newMode
+        }
+    }
  
  /// Main 120Hz update tick. Calculates velocity using the exponential curve and injects mouse movements.
  private func tick() {

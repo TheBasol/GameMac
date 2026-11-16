@@ -76,12 +76,66 @@ public final class ProfileManager {
  AppLogger.default.error("Error decoding profile from \(fileURL.lastPathComponent): \(error.localizedDescription)")
  }
  }
- return profiles
- } catch {
- AppLogger.default.error("Failed to list profiles in \(self.profilesDirectory.path): \(error.localizedDescription)")
- return []
- }
- }
+            return profiles.sorted {
+                $0.profileName.localizedCaseInsensitiveCompare($1.profileName) == .orderedAscending
+            }
+        } catch {
+            AppLogger.default.error("Failed to list profiles in \(self.profilesDirectory.path): \(error.localizedDescription)")
+            return []
+        }
+    }
+
+    /// Checks whether a profile with the given name or sanitized filename already exists.
+    public func profileExists(named name: String) -> Bool {
+        let filename = sanitizeFilename(name)
+        let fileURL = profilesDirectory.appendingPathComponent("\(filename).json")
+        if fileManager.fileExists(atPath: fileURL.path) {
+            return true
+        }
+        return listProfiles().contains {
+            $0.profileName.caseInsensitiveCompare(name) == .orderedSame
+        }
+    }
+
+    /// Generates a non-colliding copy name (e.g., "FPS Shooter Copy", "FPS Shooter Copy 2").
+    public func uniqueProfileName(base: String) -> String {
+        let trimmed = base.trimmingCharacters(in: .whitespacesAndNewlines)
+        let firstCandidate = "\(trimmed) Copy"
+        if !profileExists(named: firstCandidate) {
+            return firstCandidate
+        }
+        var index = 2
+        while true {
+            let candidate = "\(trimmed) Copy \(index)"
+            if !profileExists(named: candidate) {
+                return candidate
+            }
+            index += 1
+        }
+    }
+
+    /// Renames a profile on disk and returns the updated model.
+    public func renameProfile(_ profile: MappingProfile, to newName: String) throws -> MappingProfile {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let oldFilename = sanitizeFilename(profile.profileName)
+        let newFilename = sanitizeFilename(trimmed)
+
+        var updated = profile
+        updated.profileName = trimmed
+        try saveProfile(updated)
+
+        if oldFilename != newFilename {
+            try? deleteProfile(named: profile.profileName)
+        }
+        return updated
+    }
+
+    /// Restores the built-in default profiles to disk.
+    public func restoreDefaultProfiles() throws {
+        for profile in DefaultProfiles.all {
+            try saveProfile(profile)
+        }
+    }
  
  /// Deletes the profile with the specified name.
  /// - Parameter name: The name of the profile.

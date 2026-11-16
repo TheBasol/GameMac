@@ -57,6 +57,7 @@ public final class HIDGamepadManager {
     
     public var onConnectedDevicesChanged: (([DeviceInfo]) -> Void)?
     public var onActiveDeviceChanged: ((DeviceInfo?) -> Void)?
+    public var shouldCaptureNativeControllers: (() -> Bool)?
     
     // UI-facing callback when a physical HID button is pressed during binding (page, usage)
     public var onHIDButtonPressed: ((UInt32, UInt32) -> Void)?
@@ -251,7 +252,8 @@ public final class HIDGamepadManager {
         let vendorID = vendorIDNum.intValue
         let productID = productIDNum.intValue
         
-        let userOverrides = GameMacViewModel.shared.captureNativeControllers ? Set([vendorID]) : Set<Int>()
+        let captureNative = shouldCaptureNativeControllers?() ?? false
+        let userOverrides = captureNative ? Set([vendorID]) : Set<Int>()
         if DeviceBlacklist.shouldSkip(vid: vendorID, userOverrides: userOverrides) {
             return
         }

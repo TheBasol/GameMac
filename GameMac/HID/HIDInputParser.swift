@@ -11,6 +11,10 @@ public struct HIDInputParser {
     public static var onAxisPressed: ((UInt32, UInt32) -> Void)?
     /// When false, button-press callbacks are suppressed (normal gameplay).
     public static var bindingEnabled = false
+    /// When true, streams raw integer values per axis usage for the calibration UI.
+    public static var rawTelemetryEnabled = false
+    /// Called with `(usage, rawValue)` when `rawTelemetryEnabled` is true.
+    public static var onRawAxisValue: ((Int, Int) -> Void)?
     
     private static var lastAxisBindingKey: Int?
     
@@ -78,6 +82,9 @@ public struct HIDInputParser {
         }
         
         if let axisKey = lookupAxisSemantic(layout: layout, page: usagePage, usage: usage) {
+            if rawTelemetryEnabled {
+                onRawAxisValue?(Int(usage), Int(integerVal))
+            }
             if axisKey.contains("Trigger") {
                 let norm = normalizeTrigger(element: element, value: integerVal)
                 updateStateAxis(key: axisKey, value: norm, into: &state)

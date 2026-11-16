@@ -85,133 +85,116 @@ public final class InputMapper {
  }
  }
  
- private func processSticks(currentState: GamepadState, lastState: GamepadState) {
- // Set mouse engine parameters from the active profile
- mouseEngine.sensitivity = profile.mouseSensitivity * 10.0 // Scale if needed for appropriate velocity
- mouseEngine.exponent = profile.mouseExponent
- 
- let deadZone = profile.deadZone
- 
- // 1. Check if Left Stick is mapped to keys
- let leftStickUp = profile.buttonMapping["leftStickUp"]
- let leftStickDown = profile.buttonMapping["leftStickDown"]
- let leftStickLeft = profile.buttonMapping["leftStickLeft"]
- let leftStickRight = profile.buttonMapping["leftStickRight"]
- 
- if let up = leftStickUp, let down = leftStickDown, let left = leftStickLeft, let right = leftStickRight {
- processStickToKeys(
- x: currentState.leftStickX,
- y: currentState.leftStickY,
- lastX: lastState.leftStickX,
- lastY: lastState.leftStickY,
- upKey: up,
- downKey: down,
- leftKey: left,
- rightKey: right,
- deadzone: deadZone
- )
- }
- 
- // 2. Check if Right Stick is mapped to keys
- let rightStickUp = profile.buttonMapping["rightStickUp"]
- let rightStickDown = profile.buttonMapping["rightStickDown"]
- let rightStickLeft = profile.buttonMapping["rightStickLeft"]
- let rightStickRight = profile.buttonMapping["rightStickRight"]
- 
- if let up = rightStickUp, let down = rightStickDown, let left = rightStickLeft, let right = rightStickRight {
- processStickToKeys(
- x: currentState.rightStickX,
- y: currentState.rightStickY,
- lastX: lastState.rightStickX,
- lastY: lastState.rightStickY,
- upKey: up,
- downKey: down,
- leftKey: left,
- rightKey: right,
- deadzone: deadZone
- )
- }
- 
- // 3. Emulate mouse velocity
- let lx = abs(currentState.leftStickX) < deadZone ? 0.0 : currentState.leftStickX
- let ly = abs(currentState.leftStickY) < deadZone ? 0.0 : currentState.leftStickY
- 
- let rx = abs(currentState.rightStickX) < deadZone ? 0.0 : currentState.rightStickX
- let ry = abs(currentState.rightStickY) < deadZone ? 0.0 : currentState.rightStickY
- 
- // Update mouse engine using the stick that is not mapped to keys and is active
- if rightStickUp == nil {
- if rx != 0.0 || ry != 0.0 {
- mouseEngine.updateStickInput(x: rx, y: ry)
- } else if leftStickUp == nil {
- mouseEngine.updateStickInput(x: lx, y: ly)
- } else {
- mouseEngine.updateStickInput(x: 0.0, y: 0.0)
- }
- } else if leftStickUp == nil {
- mouseEngine.updateStickInput(x: lx, y: ly)
- } else {
- mouseEngine.updateStickInput(x: 0.0, y: 0.0)
- }
- }
- 
- private func processStickToKeys(
- x: Double,
- y: Double,
- lastX: Double,
- lastY: Double,
- upKey: UInt16,
- downKey: UInt16,
- leftKey: UInt16,
- rightKey: UInt16,
- deadzone: Double
- ) {
- let cx = abs(x) < deadzone ? 0.0 : x
- let cy = abs(y) < deadzone ? 0.0 : y
- 
- let lastCx = abs(lastX) < deadzone ? 0.0 : lastX
- let lastCy = abs(lastY) < deadzone ? 0.0 : lastY
- 
- // X-axis updates (Left / Right)
- let isNegX = cx < 0.0
- let lastNegX = lastCx < 0.0
- if isNegX != lastNegX {
- if isNegX {
- stateTracker.keyDown(leftKey)
- } else {
- stateTracker.keyUp(leftKey)
- }
- }
- 
- let isPosX = cx > 0.0
- let lastPosX = lastCx > 0.0
- if isPosX != lastPosX {
- if isPosX {
- stateTracker.keyDown(rightKey)
- } else {
- stateTracker.keyUp(rightKey)
- }
- }
- 
- // Y-axis updates (Down / Up)
- let isNegY = cy < 0.0
- let lastNegY = lastCy < 0.0
- if isNegY != lastNegY {
- if isNegY {
- stateTracker.keyDown(downKey)
- } else {
- stateTracker.keyUp(downKey)
- }
- }
- 
- let isPosY = cy > 0.0
- let lastPosY = lastCy > 0.0
- if isPosY != lastPosY {
- if isPosY {
- stateTracker.keyDown(upKey)
- } else {
- stateTracker.keyUp(upKey)
- }
- }
- }
+    private func processSticks(currentState: GamepadState, lastState: GamepadState) {
+        // Set mouse engine parameters from the active profile
+        mouseEngine.sensitivity = profile.mouseSensitivity * 10.0 // Scale if needed for appropriate velocity
+        mouseEngine.exponent = profile.mouseExponent
+
+        let deadZone = profile.deadZone
+
+        // 1. Left Stick -> Keyboard Keys
+        if profile.leftStickMode == .keyboard {
+            processStickToKeys(
+                x: currentState.leftStickX,
+                y: currentState.leftStickY,
+                lastX: lastState.leftStickX,
+                lastY: lastState.leftStickY,
+                upKey: profile.buttonMapping["leftStickUp"],
+                downKey: profile.buttonMapping["leftStickDown"],
+                leftKey: profile.buttonMapping["leftStickLeft"],
+                rightKey: profile.buttonMapping["leftStickRight"],
+                deadzone: deadZone
+            )
+        }
+
+        // 2. Right Stick -> Keyboard Keys
+        if profile.rightStickMode == .keyboard {
+            processStickToKeys(
+                x: currentState.rightStickX,
+                y: currentState.rightStickY,
+                lastX: lastState.rightStickX,
+                lastY: lastState.rightStickY,
+                upKey: profile.buttonMapping["rightStickUp"],
+                downKey: profile.buttonMapping["rightStickDown"],
+                leftKey: profile.buttonMapping["rightStickLeft"],
+                rightKey: profile.buttonMapping["rightStickRight"],
+                deadzone: deadZone
+            )
+        }
+
+        // 3. Mouse velocity emulation for sticks explicitly assigned to Mouse mode
+        let lx = abs(currentState.leftStickX) < deadZone ? 0.0 : currentState.leftStickX
+        let ly = abs(currentState.leftStickY) < deadZone ? 0.0 : currentState.leftStickY
+
+        let rx = abs(currentState.rightStickX) < deadZone ? 0.0 : currentState.rightStickX
+        let ry = abs(currentState.rightStickY) < deadZone ? 0.0 : currentState.rightStickY
+
+        if profile.rightStickMode == .mouse && (rx != 0.0 || ry != 0.0) {
+            mouseEngine.updateStickInput(x: rx, y: ry)
+        } else if profile.leftStickMode == .mouse && (lx != 0.0 || ly != 0.0) {
+            mouseEngine.updateStickInput(x: lx, y: ly)
+        } else {
+            mouseEngine.updateStickInput(x: 0.0, y: 0.0)
+        }
+    }
+
+    private func processStickToKeys(
+        x: Double,
+        y: Double,
+        lastX: Double,
+        lastY: Double,
+        upKey: UInt16?,
+        downKey: UInt16?,
+        leftKey: UInt16?,
+        rightKey: UInt16?,
+        deadzone: Double
+    ) {
+        let cx = abs(x) < deadzone ? 0.0 : x
+        let cy = abs(y) < deadzone ? 0.0 : y
+
+        let lastCx = abs(lastX) < deadzone ? 0.0 : lastX
+        let lastCy = abs(lastY) < deadzone ? 0.0 : lastY
+
+        // X-axis updates (Left / Right)
+        let isNegX = cx < 0.0
+        let lastNegX = lastCx < 0.0
+        if isNegX != lastNegX, let leftKey = leftKey {
+            if isNegX {
+                stateTracker.keyDown(leftKey)
+            } else {
+                stateTracker.keyUp(leftKey)
+            }
+        }
+
+        let isPosX = cx > 0.0
+        let lastPosX = lastCx > 0.0
+        if isPosX != lastPosX, let rightKey = rightKey {
+            if isPosX {
+                stateTracker.keyDown(rightKey)
+            } else {
+                stateTracker.keyUp(rightKey)
+            }
+        }
+
+        // Y-axis updates (Down / Up)
+        let isNegY = cy < 0.0
+        let lastNegY = lastCy < 0.0
+        if isNegY != lastNegY, let downKey = downKey {
+            if isNegY {
+                stateTracker.keyDown(downKey)
+            } else {
+                stateTracker.keyUp(downKey)
+            }
+        }
+
+        let isPosY = cy > 0.0
+        let lastPosY = lastCy > 0.0
+        if isPosY != lastPosY, let upKey = upKey {
+            if isPosY {
+                stateTracker.keyDown(upKey)
+            } else {
+                stateTracker.keyUp(upKey)
+            }
+        }
+    }
 }

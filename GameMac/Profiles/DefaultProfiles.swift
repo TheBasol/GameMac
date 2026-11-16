@@ -28,7 +28,8 @@ public struct DefaultProfiles {
  ],
  deadZone: 0.15,
  mouseSensitivity: 1.5,
- mouseExponent: 1.2
+ mouseExponent: 1.2,
+ isFpsMode: true
  )
  
  /// Default Platformer profile:
@@ -59,7 +60,10 @@ public struct DefaultProfiles {
  ],
  deadZone: 0.1,
  mouseSensitivity: 1.0,
- mouseExponent: 1.0
+ mouseExponent: 1.0,
+ isFpsMode: false,
+ leftStickMode: .keyboard,
+ rightStickMode: .disabled
  )
 
     /// Default RPG (Role-Playing Game) profile:
@@ -99,7 +103,8 @@ public struct DefaultProfiles {
         ],
         deadZone: 0.15,
         mouseSensitivity: 1.2,
-        mouseExponent: 1.1
+        mouseExponent: 1.1,
+        isFpsMode: false
     )
     
     /// All default profiles

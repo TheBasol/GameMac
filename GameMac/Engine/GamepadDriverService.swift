@@ -31,6 +31,11 @@ public final class GamepadDriverService: ObservableObject {
     }
     
     private var driverTimer: Timer?
+    private let rawAxisLock = NSLock()
+    private var rawAxisSnapshot: [Int: Int] = [:]
+
+    /// When true, natively supported controllers (Microsoft, Sony, Nintendo, Apple) are also captured.
+    public var captureNativeControllers: Bool = false
     
     private init() {
         // Initialize mapper with a default profile (will be updated by the ViewModel when selected)
@@ -47,7 +52,17 @@ public final class GamepadDriverService: ObservableObject {
                 StateTracker.shared.flush()
             }
         }
+        manager.shouldCaptureNativeControllers = { [weak self] in
+            self?.captureNativeControllers ?? false
+        }
         self.hidManager = manager
+
+        HIDInputParser.onRawAxisValue = { [weak self] usage, rawValue in
+            guard let self = self else { return }
+            self.rawAxisLock.lock()
+            self.rawAxisSnapshot[usage] = rawValue
+            self.rawAxisLock.unlock()
+        }
         
         manager.onConnectedDevicesChanged = { [weak self] devices in
             Task { @MainActor in
@@ -173,6 +188,33 @@ public final class GamepadDriverService: ObservableObject {
         if let active = activeDevice {
             activeControllerLayout = LayoutManager.shared.loadLayout(for: active)
         }
+    }
+
+    public func resetActiveLayout() {
+        guard let active = activeDevice else { return }
+        let reset = LayoutManager.shared.resetLayout(layoutKey: active.layoutKey)
+        hidManager?.activeLayout = reset
+        activeControllerLayout = reset
+        lastHardwareBindingMessage = "Restored default hardware layout for \(active.name)."
+    }
+
+    public func setMouseMode(isFpsMode: Bool) {
+        mouseEngine.mode = isFpsMode ? .fps : .desktop
+    }
+
+    public func setRawTelemetryEnabled(_ enabled: Bool) {
+        HIDInputParser.rawTelemetryEnabled = enabled
+        if !enabled {
+            rawAxisLock.lock()
+            rawAxisSnapshot.removeAll()
+            rawAxisLock.unlock()
+        }
+    }
+
+    public func readRawAxisSnapshot() -> [Int: Int] {
+        rawAxisLock.lock()
+        defer { rawAxisLock.unlock() }
+        return rawAxisSnapshot
     }
     
     public func startDriver(isFpsMode: Bool) {

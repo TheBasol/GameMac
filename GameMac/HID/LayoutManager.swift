@@ -230,4 +230,25 @@ public final class LayoutManager {
             AppLogger.hid.error("Failed to save controller layout: \(error.localizedDescription)")
         }
     }
+
+    /// Removes any user-modified layout override in Application Support and returns the default layout.
+    @discardableResult
+    public func resetLayout(layoutKey: String) -> ControllerLayout {
+        if let appSupportURL = try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: false
+        ) {
+            let fileURL = appSupportURL
+                .appendingPathComponent("GameMac", isDirectory: true)
+                .appendingPathComponent("Layouts", isDirectory: true)
+                .appendingPathComponent("\(layoutKey).json")
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                try? FileManager.default.removeItem(at: fileURL)
+                AppLogger.hid.info("Removed custom layout override for: \(layoutKey)")
+            }
+        }
+        return loadLayout(layoutKey: layoutKey)
+    }
 }
